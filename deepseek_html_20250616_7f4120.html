@@ -1,0 +1,2569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>袅袅历险记 - 绘圈冒险</title>
+    <style>
+        :root {
+            --primary-color: #a8d8ea;
+            --secondary-color: #d4f0f0;
+            --accent-color: #7ac5cd;
+            --text-color: #333;
+            --highlight-color: #ffb6c1;
+            --friend-color: #ffb347;
+            --artist-color: #b19cd9;
+        }
+        
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+        
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 10px;
+            position: relative;
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            padding: 12px;
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 5px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            color: #5a7d9a;
+            font-size: 1.5rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: var(--primary-color);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .tab.active {
+            background-color: var(--accent-color);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .chat-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            height: 45vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .chat-header {
+            display: flex;
+            align-items: center;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed var(--accent-color);
+            margin-bottom: 8px;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #5a7d9a;
+            margin-right: 8px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .avatar.friend {
+            background-color: var(--friend-color);
+        }
+        
+        .avatar.artist {
+            background-color: var(--artist-color);
+        }
+        
+        .avatar::before {
+            content: "";
+            position: absolute;
+            top: 8px;
+            left: 12px;
+            width: 16px;
+            height: 8px;
+            background-color: #fff;
+            border-radius: 50% 50% 0 0;
+        }
+        
+        .avatar::after {
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: 16px;
+            width: 8px;
+            height: 4px;
+            background-color: #fff;
+            border-radius: 0 0 50% 50%;
+        }
+        
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .chat-info h2 {
+            margin: 0;
+            color: #5a7d9a;
+            font-size: 1.1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .chat-info p {
+            margin: 0;
+            font-size: 0.7rem;
+            color: #7ac5cd;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            margin-bottom: 8px;
+            background-color: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            scrollbar-width: none;
+        }
+        
+        .chat-messages::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            padding: 6px 10px;
+            border-radius: 12px;
+            max-width: 85%;
+            word-wrap: break-word;
+            position: relative;
+            animation: fadeIn 0.3s ease-in-out;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            background-color: var(--primary-color);
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .bot-message {
+            background-color: #f0f8ff;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .friend-message {
+            background-color: rgba(255, 179, 71, 0.2);
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .artist-message {
+            background-color: rgba(177, 156, 217, 0.2);
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message-time {
+            font-size: 0.6rem;
+            color: #888;
+            margin-top: 3px;
+            text-align: right;
+        }
+        
+        .message-gift {
+            font-size: 0.8rem;
+            color: #ff6b6b;
+            margin-top: 3px;
+            font-style: italic;
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--accent-color);
+            align-items: center;
+        }
+        
+        .chat-input textarea {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--accent-color);
+            border-radius: 12px;
+            resize: none;
+            font-family: inherit;
+            height: 50px;
+            outline: none;
+            transition: border-color 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .chat-input textarea:focus {
+            border-color: #5a7d9a;
+        }
+        
+        .chat-input button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0 15px;
+            height: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        
+        .chat-input button:hover {
+            background-color: #5a7d9a;
+        }
+        
+        .status-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+        
+        .status-header {
+            text-align: center;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed var(--accent-color);
+            margin-bottom: 12px;
+        }
+        
+        .status-header h2 {
+            margin: 0;
+            color: #5a7d9a;
+            font-size: 1.1rem;
+        }
+        
+        .stats {
+            margin-bottom: 15px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .stat-label {
+            font-weight: bold;
+            color: #5a7d9a;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+        }
+        
+        .progress-bar {
+            height: 12px;
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            margin-top: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 8px;
+            background-color: var(--accent-color);
+            transition: width 0.5s ease-in-out;
+        }
+        
+        .progress-fill.friend {
+            background-color: var(--friend-color);
+        }
+        
+        .inventory {
+            margin-top: 15px;
+        }
+        
+        .inventory h3 {
+            margin-top: 0;
+            color: #5a7d9a;
+            border-bottom: 1px solid var(--accent-color);
+            padding-bottom: 5px;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        
+        .items {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .item {
+            background-color: var(--primary-color);
+            padding: 6px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .item:hover {
+            transform: translateY(-2px);
+            background-color: var(--highlight-color);
+        }
+        
+        .item-icon {
+            font-size: 1rem;
+        }
+        
+        .actions {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            background-color: var(--primary-color);
+            border: none;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #5a7d9a;
+            transition: background-color 0.3s;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .action-btn:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .action-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .action-btn.friend {
+            background-color: rgba(255, 179, 71, 0.2);
+        }
+        
+        .action-btn.artist {
+            background-color: rgba(177, 156, 217, 0.2);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 10px;
+            padding: 8px;
+            font-size: 0.7rem;
+            color: #7ac5cd;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 15px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #5a7d9a;
+            background: none;
+            border: none;
+            padding: 5px;
+        }
+        
+        .artist-card {
+            background-color: var(--secondary-color);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .artist-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .artist-name {
+            font-weight: bold;
+            color: #5a7d9a;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        
+        .artist-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.7rem;
+            margin-bottom: 8px;
+        }
+        
+        .artist-stat {
+            background-color: rgba(255,255,255,0.7);
+            padding: 2px 6px;
+            border-radius: 8px;
+        }
+        
+        .artist-desc {
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+        }
+        
+        .artist-price {
+            font-weight: bold;
+            color: #5a7d9a;
+            text-align: right;
+            font-size: 0.9rem;
+        }
+        
+        .project-stages {
+            display: flex;
+            justify-content: space-between;
+            margin: 12px 0;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        
+        .stage {
+            text-align: center;
+            flex: 1;
+            min-width: 60px;
+            position: relative;
+        }
+        
+        .stage:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            top: 12px;
+            right: -5px;
+            width: 10px;
+            height: 1px;
+            background-color: var(--accent-color);
+        }
+        
+        .stage-circle {
+            width: 24px;
+            height: 24px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            margin: 0 auto 3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            font-size: 0.8rem;
+        }
+        
+        .stage.active {
+            color: #5a7d9a;
+        }
+        
+        .stage.active .stage-circle {
+            background-color: var(--accent-color);
+        }
+        
+        .stage.completed .stage-circle {
+            background-color: #7ac5cd;
+        }
+        
+        .stage-name {
+            font-size: 0.7rem;
+        }
+        
+        .art-display {
+            background-color: #f8f8f8;
+            border: 1px dashed var(--accent-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        
+        .art-quality {
+            font-style: italic;
+            color: #5a7d9a;
+            margin-top: 8px;
+            font-size: 0.8rem;
+        }
+        
+        .review-section {
+            margin-top: 15px;
+        }
+        
+        .stars {
+            display: flex;
+            justify-content: center;
+            gap: 3px;
+            margin: 8px 0;
+        }
+        
+        .star {
+            font-size: 1.2rem;
+            color: #ccc;
+            cursor: pointer;
+        }
+        
+        .star.filled {
+            color: #ffb700;
+        }
+        
+        .save-load-btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .save-load-btns button {
+            flex: 1;
+        }
+        
+        .social-post {
+            background-color: #f8f8f8;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .post-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #5a7d9a;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+        
+        .post-user {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .post-time {
+            font-size: 0.7rem;
+            color: #888;
+            margin-left: auto;
+        }
+        
+        .post-content {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .post-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background-color: #ddd;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #888;
+            font-size: 0.8rem;
+        }
+        
+        .post-stats {
+            display: flex;
+            gap: 12px;
+            font-size: 0.7rem;
+            color: #888;
+        }
+        
+        .post-stat {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            left: 10px;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
+            z-index: 1000;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        .emoji-picker {
+            position: absolute;
+            bottom: 60px;
+            right: 0;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 10;
+            max-height: 150px;
+            overflow-y: auto;
+            width: 200px;
+        }
+        
+        .emoji-btn {
+            font-size: 1rem;
+            padding: 5px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+        }
+        
+        .emoji-btn:hover {
+            transform: scale(1.2);
+        }
+        
+        .emoji-trigger {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #5a7d9a;
+            padding: 0;
+            width: 40px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .friend-list {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        
+        .friend-item {
+            background-color: rgba(255, 179, 71, 0.2);
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .friend-item:hover {
+            transform: translateY(-2px);
+            background-color: rgba(255, 179, 71, 0.3);
+        }
+        
+        .artist-list {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        
+        .artist-item {
+            background-color: rgba(177, 156, 217, 0.2);
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .artist-item:hover {
+            transform: translateY(-2px);
+            background-color: rgba(177, 156, 217, 0.3);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-height: 700px) {
+            .chat-container {
+                height: 40vh;
+            }
+        }
+        
+        @media (max-height: 600px) {
+            .chat-container {
+                height: 35vh;
+            }
+        }
+        
+        /* Hide scrollbar but allow scrolling */
+        .scrollable {
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .scrollable::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>袅袅历险记 ✧ 绘圈冒险</h1>
+        </div>
+        
+        <div class="tabs" id="chat-tabs">
+            <div class="tab active" data-tab="niaoniao">袅袅</div>
+            <div class="tab" data-tab="friends">好友</div>
+            <div class="tab" data-tab="artists">画师</div>
+        </div>
+        
+        <div class="chat-container" id="niaoniao-chat">
+            <div class="chat-header">
+                <div class="avatar"></div>
+                <div class="chat-info">
+                    <h2>袅袅 (ฅ^•ﻌ•^ฅ)</h2>
+                    <p>在线 · 绘圈冒险中</p>
+                </div>
+            </div>
+            
+            <div class="chat-messages scrollable" id="chat-messages">
+                <div class="message bot-message">
+                    <div>你好呀！我是袅袅~ (ฅ´ω`ฅ) 今天也要一起在绘圈玩耍吗？</div>
+                    <div class="message-time">刚刚</div>
+                </div>
+            </div>
+            
+            <div class="chat-input">
+                <textarea id="user-input" placeholder="和袅袅聊天..."></textarea>
+                <button id="emoji-trigger" class="emoji-trigger">😊</button>
+                <button id="send-btn">发送</button>
+            </div>
+            
+            <div class="emoji-picker scrollable" id="emoji-picker">
+                <!-- Emojis will be added here by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="chat-container" id="friends-chat" style="display: none;">
+            <div class="chat-header">
+                <div class="avatar friend"></div>
+                <div class="chat-info">
+                    <h2>好友列表</h2>
+                    <p>和袅袅的朋友们聊天</p>
+                </div>
+            </div>
+            
+            <div class="friend-list scrollable" id="friend-list">
+                <!-- Friend items will be added here by JavaScript -->
+            </div>
+            
+            <div class="chat-messages scrollable" id="friend-chat-messages">
+                <div class="message bot-message">
+                    <div>选择一位好友开始聊天吧~ (◕‿◕✿)</div>
+                </div>
+            </div>
+            
+            <div class="chat-input">
+                <textarea id="friend-input" placeholder="和好友聊天..." disabled></textarea>
+                <button id="friend-send-btn" disabled>发送</button>
+            </div>
+        </div>
+        
+        <div class="chat-container" id="artists-chat" style="display: none;">
+            <div class="chat-header">
+                <div class="avatar artist"></div>
+                <div class="chat-info">
+                    <h2>画师列表</h2>
+                    <p>和合作过的画师聊天</p>
+                </div>
+            </div>
+            
+            <div class="artist-list scrollable" id="artist-list-chat">
+                <!-- Artist items will be added here by JavaScript -->
+            </div>
+            
+            <div class="chat-messages scrollable" id="artist-chat-messages">
+                <div class="message bot-message">
+                    <div>选择一位画师开始聊天吧~ (◕‿◕✿)</div>
+                </div>
+            </div>
+            
+            <div class="chat-input">
+                <textarea id="artist-input" placeholder="和画师聊天..." disabled></textarea>
+                <button id="artist-send-btn" disabled>发送</button>
+            </div>
+        </div>
+        
+        <div class="status-container">
+            <div class="status-header">
+                <h2>袅袅的状态</h2>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">心情值:</span>
+                    <span class="stat-value" id="mood-value">80/100</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="mood-bar" style="width: 80%"></div>
+                </div>
+                
+                <div class="stat-item">
+                    <span class="stat-label">精力值:</span>
+                    <span class="stat-value" id="energy-value">70/100</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="energy-bar" style="width: 70%"></div>
+                </div>
+                
+                <div class="stat-item">
+                    <span class="stat-label">金钱:</span>
+                    <span class="stat-value" id="money-value">500</span>
+                </div>
+                
+                <div class="stat-item">
+                    <span class="stat-label">声望:</span>
+                    <span class="stat-value" id="reputation-value">50</span>
+                </div>
+                
+                <div class="stat-item">
+                    <span class="stat-label">好感度:</span>
+                    <span class="stat-value" id="affection-value">30</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="affection-bar" style="width: 30%"></div>
+                </div>
+                
+                <div class="stat-item">
+                    <span class="stat-label">天数:</span>
+                    <span class="stat-value" id="day-value">1</span>
+                </div>
+            </div>
+            
+            <div class="inventory">
+                <h3>背包物品</h3>
+                <div class="items" id="inventory-items">
+                    <div class="item" data-item="fish">
+                        <span class="item-icon">🐟</span>
+                        <span>小鱼干</span>
+                    </div>
+                    <div class="item" data-item="peach">
+                        <span class="item-icon">🍑</span>
+                        <span>奶龙石块</span>
+                    </div>
+                    <div class="item" data-item="gift1">
+                        <span class="item-icon">🎁</span>
+                        <span>优势的礼物</span>
+                    </div>
+                    <div class="item" data-item="gift2">
+                        <span class="item-icon">🎀</span>
+                        <span>画师的礼物</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="actions">
+                <button class="action-btn" id="new-day-btn">新的一天</button>
+                <button class="action-btn" id="invite-artist-btn">邀请画师</button>
+                <button class="action-btn" id="check-social-btn">查看社交</button>
+                <button class="action-btn friend" id="talk-friend-btn">找优势互骂</button>
+                <button class="action-btn artist" id="ask-artist-btn">请教画师</button>
+                <div class="save-load-btns">
+                    <button class="action-btn" id="save-btn">保存游戏</button>
+                    <button class="action-btn" id="load-btn">读取游戏</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            袅袅历险记 · 绘圈冒险 · 和袅袅一起玩耍吧 (ฅ^•ﻌ•^ฅ)
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div class="modal" id="artist-modal">
+        <div class="modal-content scrollable">
+            <button class="close-modal">&times;</button>
+            <h2>今日可邀请的画师</h2>
+            <div id="artist-list">
+                <!-- Artist cards will be added here by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="project-modal">
+        <div class="modal-content scrollable">
+            <button class="close-modal">&times;</button>
+            <h2 id="project-title">企划进行中</h2>
+            
+            <div class="project-stages scrollable" id="project-stages">
+                <!-- Project stages will be added here by JavaScript -->
+            </div>
+            
+            <div class="art-display" id="art-display">
+                <div id="art-stage">等待画师开始创作...</div>
+                <div class="art-quality" id="art-quality"></div>
+            </div>
+            
+            <div id="project-controls">
+                <button class="action-btn" id="next-stage-btn">下一步</button>
+                <button class="action-btn" id="approve-btn" style="display: none;">通过</button>
+                <button class="action-btn" id="reject-btn" style="display: none;">要求修改</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="social-modal">
+        <div class="modal-content scrollable">
+            <button class="close-modal">&times;</button>
+            <h2>社交媒体</h2>
+            
+            <div id="social-feed">
+                <!-- Social posts will be added here by JavaScript -->
+            </div>
+            
+            <div id="social-events">
+                <button class="action-btn" id="post-art-btn">发布作品</button>
+                <button class="action-btn" id="random-event-btn">看看动态</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="review-modal">
+        <div class="modal-content scrollable">
+            <button class="close-modal">&times;</button>
+            <h2>企划评价</h2>
+            
+            <div class="review-section">
+                <h3>你对画师的评价</h3>
+                <div class="stars" id="artist-review-stars">
+                    <span class="star" data-rating="1">★</span>
+                    <span class="star" data-rating="2">★</span>
+                    <span class="star" data-rating="3">★</span>
+                    <span class="star" data-rating="4">★</span>
+                    <span class="star" data-rating="5">★</span>
+                </div>
+                <textarea id="artist-review-text" placeholder="写下你对画师的评价..." rows="3"></textarea>
+            </div>
+            
+            <div class="review-section">
+                <h3>画师对你的评价</h3>
+                <div id="artist-feedback">
+                    <p>等待画师评价...</p>
+                </div>
+            </div>
+            
+            <button class="action-btn" id="submit-review-btn">提交评价</button>
+        </div>
+    </div>
+    
+    <script>
+        // Game state
+        const gameState = {
+            mood: 80,
+            energy: 70,
+            money: 500,
+            reputation: 50,
+            affection: 30, // 玩家好感度
+            day: 1,
+            inventory: {
+                fish: 3,
+                peach: 2,
+                gift1: 0, // 优势的礼物
+                gift2: 0  // 画师的礼物
+            },
+            currentProject: null,
+            completedProjects: [],
+            socialPosts: [],
+            availableArtists: [],
+            isTalkingToFriend: false,
+            currentFriend: null,
+            currentArtist: null,
+            friends: [
+                {
+                    name: "优势",
+                    relationship: 50,
+                    lastTalkDay: 0,
+                    gifts: 0
+                }
+            ],
+            knownArtists: []
+        };
+        
+        // Artist database
+        const artists = [
+            {
+                name: "爱吃辣的土豆",
+                description: "喜欢画辣味十足的插画，粉丝量中等",
+                fans: "5000",
+                popularity: "中",
+                style: "厚涂/鬼味",
+                skill: "中",
+                price: "低",
+                difficulty: "低",
+                basePrice: 100,
+                acceptChance: 0.8,
+                relationship: 0
+            },
+            {
+                name: "优雅的艺术家",
+                description: "作品充满高级感，粉丝众多",
+                fans: "20000",
+                popularity: "高",
+                style: "高级灰/清新",
+                skill: "高",
+                price: "高",
+                difficulty: "高",
+                basePrice: 300,
+                acceptChance: 0.5,
+                relationship: 0
+            },
+            {
+                name: "白月光女神",
+                description: "画风唯美梦幻，粉丝心目中的女神",
+                fans: "15000",
+                popularity: "高",
+                style: "少女感/萌萌",
+                skill: "女神级别",
+                price: "高",
+                difficulty: "高",
+                basePrice: 400,
+                acceptChance: 0.4,
+                relationship: 0
+            },
+            {
+                name: "屡教不改的小抄抄",
+                description: "经常陷入抄袭风波但依然有人气",
+                fans: "8000",
+                popularity: "中",
+                style: "多变",
+                skill: "中",
+                price: "中",
+                difficulty: "中",
+                basePrice: 200,
+                acceptChance: 0.7,
+                relationship: 0
+            },
+            {
+                name: "爱拖稿的瓜人",
+                description: "画得好但总是拖稿，粉丝又爱又恨",
+                fans: "10000",
+                popularity: "中",
+                style: "厚涂/鬼味",
+                skill: "高",
+                price: "中",
+                difficulty: "中",
+                basePrice: 250,
+                acceptChance: 0.6,
+                relationship: 0
+            },
+            {
+                name: "ai改大师",
+                description: "擅长用AI辅助创作，争议不断",
+                fans: "6000",
+                popularity: "低",
+                style: "多变",
+                skill: "低",
+                price: "低",
+                difficulty: "低",
+                basePrice: 80,
+                acceptChance: 0.9,
+                relationship: 0
+            },
+            {
+                name: "色彩魔法师",
+                description: "色彩运用惊艳，小有名气",
+                fans: "12000",
+                popularity: "中",
+                style: "清新/高级灰",
+                skill: "高",
+                price: "中",
+                difficulty: "中",
+                basePrice: 220,
+                acceptChance: 0.65,
+                relationship: 0
+            },
+            {
+                name: "萌萌兔兔",
+                description: "专画可爱动物，粉丝多为低龄",
+                fans: "7000",
+                popularity: "中",
+                style: "萌萌",
+                skill: "中",
+                price: "低",
+                difficulty: "低",
+                basePrice: 120,
+                acceptChance: 0.85,
+                relationship: 0
+            }
+        ];
+        
+        // Social events
+        const socialEvents = [
+            {
+                type: "praise",
+                message: "有人夸你的作品太棒了！",
+                moodChange: +10,
+                reputationChange: +5
+            },
+            {
+                type: "expand",
+                message: "有人想和你扩列！",
+                moodChange: +5,
+                reputationChange: +2
+            },
+            {
+                type: "compliment",
+                message: "你的作品获得了大量点赞！",
+                moodChange: +15,
+                reputationChange: +10
+            },
+            {
+                type: "ky",
+                message: "有人在你的作品下KY，说了无关的内容...",
+                moodChange: -5,
+                reputationChange: 0
+            },
+            {
+                type: "hate",
+                message: "有人留下了恶意评论...",
+                moodChange: -15,
+                reputationChange: -5
+            },
+            {
+                type: "exposed",
+                message: "你被人挂出来了！评论区一片混乱...",
+                moodChange: -20,
+                reputationChange: -10
+            }
+        ];
+        
+        // NiaoNiao responses
+        const niaoniaoResponses = {
+            greeting: [
+                "你好呀！我是袅袅~ (ฅ´ω`ฅ) 今天也要一起在绘圈玩耍吗？",
+                "喵呜~你来啦！(^・ω・^ ) 今天想做什么呢？",
+                "袅袅在这里！(ฅ^•ﻌ•^ฅ) 准备好开始绘圈冒险了吗？"
+            ],
+            happy: [
+                "好开心！(≧▽≦) 和你聊天真是太棒啦！",
+                "喵哈哈哈~ (ノ≧∀≦)ノ 心情超好的！",
+                "开心到转圈圈~ (ฅ´▽`ฅ) 最喜欢和你玩了！"
+            ],
+            sad: [
+                "呜...有点难过 (｡•́︿•̀｡) 能陪陪我吗？",
+                "袅袅现在心情不太好... (´；ω；`)",
+                "喵...感觉有点低落 (╥﹏╥)"
+            ],
+            angry: [
+                "气死袅袅了！(╯°□°）╯︵ ┻━┻",
+                "哼！(〃＞＿＜;〃) 不想理你了！",
+                "袅袅生气了！(｀へ´*)ノ 哄不好的那种！"
+            ],
+            food: [
+                "哇！小鱼干！(ฅ>ω<*ฅ) 谢谢你！",
+                "奶龙石块！袅袅最爱吃了！(ﾉ>ω<)ﾉ",
+                "喵呜~好吃！(๑´ڡ`๑) 心情变好啦！"
+            ],
+            friend: [
+                "优势那个笨蛋！(╬ Ò﹏Ó) 今天又说我画的奶龙像蚯蚓！",
+                "优势说我玩蛋仔派对太菜了 (╥﹏╥) 明明是她自己菜！",
+                "和优势互骂真开心~ (￣▽￣*)ゞ 虽然她是个笨蛋！"
+            ],
+            project: [
+                "今天想邀请哪个小画家呢？( • ̀ω•́ )✧",
+                "袅袅有好多企划想法！(๑•̀ㅂ•́)و✧",
+                "邀请画师好紧张... (´･_･`) 希望他们会喜欢我的企划"
+            ],
+            social: [
+                "看看今天社交媒体上有什么新鲜事~ (￣ω￣)",
+                "袅袅的账号需要经营啦！(๑•̀ω•́)ノ",
+                "发点什么好呢... (・ω・)？"
+            ],
+            affection: [
+                "最喜欢和你一起玩了！(ฅ´ω`ฅ)♡",
+                "你是袅袅最好的朋友！(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+                "和你说什么都可以呢~ (｡♥‿♥｡)",
+                "今天也想和你在一起！(◍•ᴗ•◍)❤"
+            ],
+            gift: [
+                "哇！是给袅袅的礼物吗？(ﾉ>ω<)ﾉ",
+                "好开心收到礼物！(≧◡≦) ♡",
+                "谢谢你想着袅袅！(｡♡‿♡｡)",
+                "最喜欢礼物了！(๑´ㅂ`๑)♡*.+゜"
+            ],
+            default: [
+                "喵？你说什么？(・ω・=)",
+                "袅袅没听懂... (´･ω･`)?",
+                "可以再说一遍吗？(ฅ´ω`ฅ)"
+            ]
+        };
+        
+        // Friend responses
+        const friendResponses = {
+            advantage: [
+                "袅袅你个笨蛋！(╬ Ò﹏Ó)",
+                "你画的奶龙像蚯蚓！(〃＞＿＜;〃)",
+                "你玩蛋仔派对太菜了！(╯°□°）╯︵ ┻━┻",
+                "你的企划没创意！(ノಠ益ಠ)ノ",
+                "送你个礼物，别生气了~ (￣▽￣*)ゞ"
+            ],
+            artist: [
+                "这个企划很有趣呢！(•̀ᴗ•́)و",
+                "我会尽快完成稿件的~ (｡•̀ᴗ-)✧",
+                "这个修改意见很专业！(๑•̀ㅂ•́)و✧",
+                "合作很愉快，送你个小礼物！(◕‿◕✿)",
+                "期待下次合作！(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧"
+            ]
+        };
+        
+        // Project stages
+        const projectStages = [
+            { name: "草稿", key: "sketch" },
+            { name: "线稿", key: "line" },
+            { name: "上色", key: "color" },
+            { name: "成图", key: "final" }
+        ];
+        
+        // Quality descriptions
+        const qualityDescriptions = {
+            bad: ["翻车了...", "不太理想", "需要大改", "完全不对"],
+            normal: ["还可以", "一般般", "中规中矩", "勉强通过"],
+            good: ["超棒！", "惊艳！", "完美！", "超出预期！"]
+        };
+        
+        // Emoji list
+        const emojis = ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🤭", "🤫", "🤥", "😶", "😐", "😑", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👹", "👺", "🤡", "💩", "👻", "💀", "☠️", "👽", "👾", "🤖", "🎃", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾"];
+        
+        // Gifts
+        const gifts = {
+            friend: [
+                { name: "奶龙玩偶", effect: { mood: 15, affection: 5 } },
+                { name: "小鱼干礼盒", effect: { mood: 10, affection: 3 } },
+                { name: "蛋仔派对皮肤", effect: { mood: 20, affection: 8 } }
+            ],
+            artist: [
+                { name: "高级画笔", effect: { mood: 10, reputation: 5 } },
+                { name: "绘画教程", effect: { mood: 5, reputation: 10 } },
+                { name: "色彩指南", effect: { mood: 8, reputation: 8 } }
+            ]
+        };
+        
+        // DOM elements
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const emojiTrigger = document.getElementById('emoji-trigger');
+        const emojiPicker = document.getElementById('emoji-picker');
+        
+        // Status elements
+        const moodValue = document.getElementById('mood-value');
+        const moodBar = document.getElementById('mood-bar');
+        const energyValue = document.getElementById('energy-value');
+        const energyBar = document.getElementById('energy-bar');
+        const moneyValue = document.getElementById('money-value');
+        const reputationValue = document.getElementById('reputation-value');
+        const affectionValue = document.getElementById('affection-value');
+        const affectionBar = document.getElementById('affection-bar');
+        const dayValue = document.getElementById('day-value');
+        
+        // Tabs
+        const chatTabs = document.querySelectorAll('#chat-tabs .tab');
+        const niaoniaoChat = document.getElementById('niaoniao-chat');
+        const friendsChat = document.getElementById('friends-chat');
+        const artistsChat = document.getElementById('artists-chat');
+        
+        // Friend chat elements
+        const friendList = document.getElementById('friend-list');
+        const friendChatMessages = document.getElementById('friend-chat-messages');
+        const friendInput = document.getElementById('friend-input');
+        const friendSendBtn = document.getElementById('friend-send-btn');
+        
+        // Artist chat elements
+        const artistListChat = document.getElementById('artist-list-chat');
+        const artistChatMessages = document.getElementById('artist-chat-messages');
+        const artistInput = document.getElementById('artist-input');
+        const artistSendBtn = document.getElementById('artist-send-btn');
+        
+        // Buttons
+        const newDayBtn = document.getElementById('new-day-btn');
+        const inviteArtistBtn = document.getElementById('invite-artist-btn');
+        const checkSocialBtn = document.getElementById('check-social-btn');
+        const talkFriendBtn = document.getElementById('talk-friend-btn');
+        const askArtistBtn = document.getElementById('ask-artist-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const loadBtn = document.getElementById('load-btn');
+        
+        // Modals
+        const artistModal = document.getElementById('artist-modal');
+        const projectModal = document.getElementById('project-modal');
+        const socialModal = document.getElementById('social-modal');
+        const reviewModal = document.getElementById('review-modal');
+        
+        // Modal buttons
+        const closeModalBtns = document.querySelectorAll('.close-modal');
+        const nextStageBtn = document.getElementById('next-stage-btn');
+        const approveBtn = document.getElementById('approve-btn');
+        const rejectBtn = document.getElementById('reject-btn');
+        const postArtBtn = document.getElementById('post-art-btn');
+        const randomEventBtn = document.getElementById('random-event-btn');
+        const submitReviewBtn = document.getElementById('submit-review-btn');
+        
+        // Inventory items
+        const inventoryItems = document.querySelectorAll('.item');
+        
+        // Initialize emoji picker
+        function initEmojiPicker() {
+            emojis.forEach(emoji => {
+                const btn = document.createElement('button');
+                btn.className = 'emoji-btn';
+                btn.textContent = emoji;
+                btn.addEventListener('click', () => {
+                    if (niaoniaoChat.style.display !== 'none') {
+                        userInput.value += emoji;
+                        userInput.focus();
+                    } else if (friendsChat.style.display !== 'none') {
+                        friendInput.value += emoji;
+                        friendInput.focus();
+                    } else if (artistsChat.style.display !== 'none') {
+                        artistInput.value += emoji;
+                        artistInput.focus();
+                    }
+                });
+                emojiPicker.appendChild(btn);
+            });
+        }
+        
+        // Show notification
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // Add message to chat
+        function addMessage(text, isUser = false, type = 'niaoniao', gift = null) {
+            let messagesContainer, messageClass;
+            
+            switch (type) {
+                case 'friend':
+                    messagesContainer = friendChatMessages;
+                    messageClass = isUser ? 'user-message' : 'friend-message';
+                    break;
+                case 'artist':
+                    messagesContainer = artistChatMessages;
+                    messageClass = isUser ? 'user-message' : 'artist-message';
+                    break;
+                default:
+                    messagesContainer = chatMessages;
+                    messageClass = isUser ? 'user-message' : 'bot-message';
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${messageClass}`;
+            
+            const messageContent = document.createElement('div');
+            messageContent.textContent = text;
+            messageDiv.appendChild(messageContent);
+            
+            if (gift) {
+                const giftDiv = document.createElement('div');
+                giftDiv.className = 'message-gift';
+                giftDiv.textContent = `🎁 收到礼物: ${gift}`;
+                messageDiv.appendChild(giftDiv);
+            }
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            const now = new Date();
+            timeDiv.textContent = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+            messageDiv.appendChild(timeDiv);
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // NiaoNiao response
+        function niaoniaoRespond(input) {
+            input = input.toLowerCase();
+            let responses = niaoniaoResponses.default;
+            
+            // Check for affection-based responses (10% chance when affection > 50)
+            if (gameState.affection > 50 && Math.random() < 0.1) {
+                responses = niaoniaoResponses.affection;
+            } 
+            // Check for gift-based responses
+            else if (input.includes('礼物') || input.includes('送你') || input.includes('给袅袅')) {
+                responses = niaoniaoResponses.gift;
+            }
+            else if (input.includes('你好') || input.includes('嗨') || input.includes('hello')) {
+                responses = niaoniaoResponses.greeting;
+            } else if (input.includes('开心') || input.includes('高兴') || input.includes('快乐')) {
+                responses = niaoniaoResponses.happy;
+            } else if (input.includes('难过') || input.includes('伤心') || input.includes('哭')) {
+                responses = niaoniaoResponses.sad;
+            } else if (input.includes('生气') || input.includes('怒') || input.includes('气死')) {
+                responses = niaoniaoResponses.angry;
+            } else if (input.includes('鱼') || input.includes('奶龙') || input.includes('吃')) {
+                responses = niaoniaoResponses.food;
+            } else if (input.includes('优势') || input.includes('朋友') || input.includes('互骂')) {
+                responses = niaoniaoResponses.friend;
+            } else if (input.includes('画师') || input.includes('企划') || input.includes('邀请')) {
+                responses = niaoniaoResponses.project;
+            } else if (input.includes('社交') || input.includes('媒体') || input.includes('发帖')) {
+                responses = niaoniaoResponses.social;
+            }
+            
+            const response = responses[Math.floor(Math.random() * responses.length)];
+            setTimeout(() => {
+                addMessage(response);
+                
+                // Small affection increase for chatting
+                if (Math.random() < 0.3) {
+                    increaseAffection(1);
+                }
+            }, 500);
+        }
+        
+        // Increase affection
+        function increaseAffection(amount) {
+            gameState.affection = Math.min(100, gameState.affection + amount);
+            updateStatus();
+            
+            // Check for affection events
+            checkAffectionEvents();
+        }
+        
+        // Check affection events
+        function checkAffectionEvents() {
+            // Affection milestones
+            if (gameState.affection >= 50 && gameState.affection - 1 < 50) {
+                addMessage("袅袅好像越来越喜欢你了呢！(｡♥‿♥｡)");
+            } else if (gameState.affection >= 80 && gameState.affection - 1 < 80) {
+                addMessage("你是袅袅最好的朋友！(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧");
+            }
+            
+            // Random gift at high affection
+            if (gameState.affection > 60 && Math.random() < 0.1) {
+                const gift = gifts.friend[Math.floor(Math.random() * gifts.friend.length)];
+                gameState.inventory.gift1++;
+                updateStatus();
+                addMessage(`袅袅送给你一个${gift.name}！(◕‿◕✿)`, false, 'niaoniao', gift.name);
+            }
+        }
+        
+        // Update status display
+        function updateStatus() {
+            moodValue.textContent = `${gameState.mood}/100`;
+            moodBar.style.width = `${gameState.mood}%`;
+            energyValue.textContent = `${gameState.energy}/100`;
+            energyBar.style.width = `${gameState.energy}%`;
+            moneyValue.textContent = gameState.money;
+            reputationValue.textContent = gameState.reputation;
+            affectionValue.textContent = gameState.affection;
+            affectionBar.style.width = `${gameState.affection}%`;
+            dayValue.textContent = gameState.day;
+            
+            // Update inventory display
+            document.querySelector('[data-item="fish"]').innerHTML = `<span class="item-icon">🐟</span> 小鱼干 ×${gameState.inventory.fish}`;
+            document.querySelector('[data-item="peach"]').innerHTML = `<span class="item-icon">🍑</span> 奶龙石块 ×${gameState.inventory.peach}`;
+            document.querySelector('[data-item="gift1"]').innerHTML = `<span class="item-icon">🎁</span> 优势的礼物 ×${gameState.inventory.gift1}`;
+            document.querySelector('[data-item="gift2"]').innerHTML = `<span class="item-icon">🎀</span> 画师的礼物 ×${gameState.inventory.gift2}`;
+            
+            // Check for game over conditions
+            if (gameState.mood <= 0) {
+                showNotification("袅袅抑郁了...游戏结束");
+                setTimeout(() => {
+                    resetGame();
+                }, 2000);
+            }
+            
+            if (gameState.reputation <= 0) {
+                showNotification("袅袅被网暴退圈了...游戏结束");
+                setTimeout(() => {
+                    resetGame();
+                }, 2000);
+            }
+        }
+        
+        // Reset game
+        function resetGame() {
+            gameState.mood = 80;
+            gameState.energy = 70;
+            gameState.money = 500;
+            gameState.reputation = 50;
+            gameState.affection = 30;
+            gameState.day = 1;
+            gameState.inventory = {
+                fish: 3,
+                peach: 2,
+                gift1: 0,
+                gift2: 0
+            };
+            gameState.currentProject = null;
+            gameState.completedProjects = [];
+            gameState.socialPosts = [];
+            gameState.availableArtists = [];
+            gameState.isTalkingToFriend = false;
+            gameState.currentFriend = null;
+            gameState.currentArtist = null;
+            gameState.friends = [
+                {
+                    name: "优势",
+                    relationship: 50,
+                    lastTalkDay: 0,
+                    gifts: 0
+                }
+            ];
+            gameState.knownArtists = [];
+            
+            updateStatus();
+            chatMessages.innerHTML = '';
+            addMessage(niaoniaoResponses.greeting[0]);
+            
+            // Clear friend and artist chats
+            friendChatMessages.innerHTML = '<div class="message bot-message"><div>选择一位好友开始聊天吧~ (◕‿◕✿)</div></div>';
+            artistChatMessages.innerHTML = '<div class="message bot-message"><div>选择一位画师开始聊天吧~ (◕‿◕✿)</div></div>';
+            
+            // Update friend and artist lists
+            updateFriendList();
+            updateArtistList();
+        }
+        
+        // New day
+        function newDay() {
+            gameState.day++;
+            gameState.energy = Math.min(100, gameState.energy + 30);
+            
+            // Generate available artists for the day (0-3 artists)
+            const numArtists = Math.floor(Math.random() * 4);
+            gameState.availableArtists = [];
+            
+            for (let i = 0; i < numArtists; i++) {
+                const randomArtist = artists[Math.floor(Math.random() * artists.length)];
+                if (!gameState.availableArtists.some(a => a.name === randomArtist.name)) {
+                    gameState.availableArtists.push({...randomArtist});
+                }
+            }
+            
+            // Random friend event (30% chance)
+            if (Math.random() < 0.3) {
+                const friend = gameState.friends[0]; // 优势
+                if (gameState.day - friend.lastTalkDay > 2) {
+                    // Friend might send a gift
+                    if (Math.random() < 0.4) {
+                        const gift = gifts.friend[Math.floor(Math.random() * gifts.friend.length)];
+                        gameState.inventory.gift1++;
+                        updateStatus();
+                        addMessage(`优势送给你一个${gift.name}！(◕‿◕✿)`, false, 'niaoniao', gift.name);
+                    } else {
+                        addMessage("优势来找你聊天了！(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧");
+                    }
+                }
+            }
+            
+            updateStatus();
+            addMessage(`第 ${gameState.day} 天开始啦！今天有 ${gameState.availableArtists.length} 位画师开放邀请~`);
+            
+            if (gameState.availableArtists.length === 0) {
+                addMessage("今天没有画师开放邀请呢...要不要做点别的事情？(｡•́︿•̀｡)");
+            }
+        }
+        
+        // Show artist modal
+        function showArtistModal() {
+            if (gameState.availableArtists.length === 0) {
+                addMessage("今天没有可以邀请的画师呢... (´；ω；`)");
+                return;
+            }
+            
+            const artistList = document.getElementById('artist-list');
+            artistList.innerHTML = '';
+            
+            gameState.availableArtists.forEach(artist => {
+                const card = document.createElement('div');
+                card.className = 'artist-card';
+                card.innerHTML = `
+                    <div class="artist-name">${artist.name}</div>
+                    <div class="artist-desc">${artist.description}</div>
+                    <div class="artist-stats">
+                        <span class="artist-stat">粉丝: ${artist.fans}</span>
+                        <span class="artist-stat">人气: ${artist.popularity}</span>
+                        <span class="artist-stat">画风: ${artist.style}</span>
+                        <span class="artist-stat">水平: ${artist.skill}</span>
+                    </div>
+                    <div class="artist-price">价格: ${artist.price} (约${artist.basePrice}元)</div>
+                `;
+                
+                card.addEventListener('click', () => inviteArtist(artist));
+                artistList.appendChild(card);
+            });
+            
+            artistModal.style.display = 'flex';
+        }
+        
+        // Invite artist
+        function inviteArtist(artist) {
+            artistModal.style.display = 'none';
+            
+            // Check if enough money
+            if (gameState.money < artist.basePrice) {
+                addMessage(`邀请${artist.name}需要${artist.basePrice}元，但袅袅只有${gameState.money}元... (╥﹏╥)`);
+                return;
+            }
+            
+            // Check if enough energy
+            if (gameState.energy < 20) {
+                addMessage("袅袅太累了，没有精力邀请画师... (｡•́︿•̀｡)");
+                return;
+            }
+            
+            // Spend money and energy
+            gameState.money -= artist.basePrice;
+            gameState.energy -= 20;
+            updateStatus();
+            
+            addMessage(`袅袅向 ${artist.name} 发出了邀请，价格 ${artist.basePrice}元... (´･_･`)`);
+            
+            // Determine if artist accepts
+            const accepted = Math.random() < artist.acceptChance;
+            
+            setTimeout(() => {
+                if (accepted) {
+                    // Artist accepts
+                    const moodChange = Math.round(10 * (1 - artist.acceptChance));
+                    gameState.mood = Math.min(100, gameState.mood + moodChange);
+                    updateStatus();
+                    
+                    addMessage(`太棒了！${artist.name} 接受了袅袅的邀请！(≧▽≦) 心情+${moodChange}`);
+                    startProject(artist);
+                    
+                    // Add to known artists if not already
+                    if (!gameState.knownArtists.some(a => a.name === artist.name)) {
+                        gameState.knownArtists.push({
+                            name: artist.name,
+                            relationship: 10, // Starting relationship
+                            lastTalkDay: gameState.day
+                        });
+                        updateArtistList();
+                    }
+                } else {
+                    // Artist rejects
+                    const moodChange = -Math.round(15 * artist.acceptChance);
+                    gameState.mood = Math.max(0, gameState.mood + moodChange);
+                    updateStatus();
+                    
+                    addMessage(`呜...${artist.name} 拒绝了袅袅的邀请... (｡•́︿•̀｡) 心情${moodChange}`);
+                }
+            }, 1500);
+        }
+        
+        // Start project
+        function startProject(artist) {
+            gameState.currentProject = {
+                artist: artist,
+                currentStage: 0,
+                stages: projectStages.map(stage => ({
+                    name: stage.name,
+                    key: stage.key,
+                    completed: false,
+                    quality: null,
+                    approved: false
+                })),
+                qualityCount: {
+                    good: 0,
+                    normal: 0,
+                    bad: 0
+                }
+            };
+            
+            showProjectModal();
+        }
+        
+        // Show project modal
+        function showProjectModal() {
+            const project = gameState.currentProject;
+            const projectTitle = document.getElementById('project-title');
+            const projectStagesDiv = document.getElementById('project-stages');
+            const artDisplay = document.getElementById('art-stage');
+            const artQuality = document.getElementById('art-quality');
+            
+            projectTitle.textContent = `与 ${project.artist.name} 的合作企划`;
+            projectStagesDiv.innerHTML = '';
+            
+            project.stages.forEach((stage, index) => {
+                const stageDiv = document.createElement('div');
+                stageDiv.className = `stage ${index === project.currentStage ? 'active' : ''} ${stage.completed ? 'completed' : ''}`;
+                
+                const circle = document.createElement('div');
+                circle.className = 'stage-circle';
+                circle.textContent = index + 1;
+                stageDiv.appendChild(circle);
+                
+                const name = document.createElement('div');
+                name.className = 'stage-name';
+                name.textContent = stage.name;
+                stageDiv.appendChild(name);
+                
+                projectStagesDiv.appendChild(stageDiv);
+            });
+            
+            const currentStage = project.stages[project.currentStage];
+            if (currentStage.completed) {
+                artDisplay.textContent = `查看 ${currentStage.name}`;
+                artQuality.textContent = qualityDescriptions[currentStage.quality][Math.floor(Math.random() * qualityDescriptions[currentStage.quality].length)];
+                
+                if (!currentStage.approved) {
+                    approveBtn.style.display = 'inline-block';
+                    rejectBtn.style.display = 'inline-block';
+                    nextStageBtn.style.display = 'none';
+                } else {
+                    approveBtn.style.display = 'none';
+                    rejectBtn.style.display = 'none';
+                    nextStageBtn.style.display = 'inline-block';
+                }
+            } else {
+                artDisplay.textContent = `等待画师完成 ${currentStage.name}...`;
+                artQuality.textContent = '';
+                approveBtn.style.display = 'none';
+                rejectBtn.style.display = 'none';
+                nextStageBtn.style.display = 'inline-block';
+            }
+            
+            projectModal.style.display = 'flex';
+        }
+        
+        // Next project stage
+        function nextProjectStage() {
+            const project = gameState.currentProject;
+            const currentStage = project.stages[project.currentStage];
+            
+            if (!currentStage.completed) {
+                // Complete current stage
+                currentStage.completed = true;
+                
+                // Determine quality (weighted towards normal)
+                const rand = Math.random();
+                let quality;
+                if (rand < 0.2) {
+                    quality = 'bad';
+                } else if (rand < 0.7) {
+                    quality = 'normal';
+                } else {
+                    quality = 'good';
+                }
+                
+                currentStage.quality = quality;
+                project.qualityCount[quality]++;
+                
+                showProjectModal();
+                
+                // Show quality message
+                setTimeout(() => {
+                    const qualityMsg = qualityDescriptions[quality][Math.floor(Math.random() * qualityDescriptions[quality].length)];
+                    addMessage(`${project.artist.name} 完成了${currentStage.name}，${qualityMsg} (・ω・)`);
+                }, 500);
+            } else {
+                // Move to next stage
+                if (project.currentStage < project.stages.length - 1) {
+                    project.currentStage++;
+                    showProjectModal();
+                } else {
+                    // Project completed
+                    completeProject();
+                }
+            }
+        }
+        
+        // Approve stage
+        function approveStage() {
+            const project = gameState.currentProject;
+            const currentStage = project.stages[project.currentStage];
+            
+            currentStage.approved = true;
+            
+            // Small mood boost for approving
+            gameState.mood = Math.min(100, gameState.mood + 5);
+            updateStatus();
+            
+            addMessage(`袅袅通过了 ${currentStage.name}！(◕‿◕✿)`);
+            showProjectModal();
+        }
+        
+        // Reject stage
+        function rejectStage() {
+            const project = gameState.currentProject;
+            const currentStage = project.stages[project.currentStage];
+            
+            // Artist may improve quality (50% chance)
+            if (Math.random() < 0.5) {
+                if (currentStage.quality === 'bad') {
+                    currentStage.quality = 'normal';
+                    project.qualityCount.bad--;
+                    project.qualityCount.normal++;
+                } else if (currentStage.quality === 'normal') {
+                    currentStage.quality = 'good';
+                    project.qualityCount.normal--;
+                    project.qualityCount.good++;
+                }
+            }
+            
+            // Small mood penalty for rejecting
+            gameState.mood = Math.max(0, gameState.mood - 5);
+            updateStatus();
+            
+            addMessage(`袅袅要求修改 ${currentStage.name}... (´･_･`)`);
+            showProjectModal();
+        }
+        
+        // Complete project
+        function completeProject() {
+            const project = gameState.currentProject;
+            
+            // Determine final quality
+            let finalQuality;
+            if (project.qualityCount.bad >= 2) {
+                finalQuality = 'bad';
+            } else if (project.qualityCount.good >= 2) {
+                finalQuality = 'good';
+            } else {
+                finalQuality = 'normal';
+            }
+            
+            // Calculate mood change based on final quality
+            let moodChange;
+            if (finalQuality === 'good') {
+                moodChange = 20;
+                addMessage(`企划完成啦！成图超棒！袅袅超开心！(≧▽≦) 心情+20`);
+            } else if (finalQuality === 'normal') {
+                moodChange = 5;
+                addMessage(`企划完成啦！成图还不错~ (◕‿◕) 心情+5`);
+            } else {
+                moodChange = -15;
+                addMessage(`企划完成了...但成图翻车了... (｡•́︿•̀｡) 心情-15`);
+            }
+            
+            gameState.mood = Math.min(100, Math.max(0, gameState.mood + moodChange));
+            gameState.completedProjects.push({
+                artist: project.artist,
+                quality: finalQuality
+            });
+            
+            // Gain reputation based on artist popularity
+            let repChange;
+            if (project.artist.popularity === '高') {
+                repChange = 10;
+            } else if (project.artist.popularity === '中') {
+                repChange = 5;
+            } else {
+                repChange = 2;
+            }
+            
+            if (finalQuality === 'good') repChange *= 1.5;
+            else if (finalQuality === 'bad') repChange *= 0.5;
+            
+            gameState.reputation = Math.max(0, gameState.reputation + Math.round(repChange));
+            
+            // Increase relationship with artist
+            const knownArtist = gameState.knownArtists.find(a => a.name === project.artist.name);
+            if (knownArtist) {
+                knownArtist.relationship = Math.min(100, knownArtist.relationship + 10);
+                
+                // Artist might send a gift (30% chance)
+                if (Math.random() < 0.3) {
+                    const gift = gifts.artist[Math.floor(Math.random() * gifts.artist.length)];
+                    gameState.inventory.gift2++;
+                    updateStatus();
+                    addMessage(`${project.artist.name}送给你一个${gift.name}！(◕‿◕✿)`, false, 'niaoniao', gift.name);
+                }
+            }
+            
+            updateStatus();
+            projectModal.style.display = 'none';
+            gameState.currentProject = null;
+            
+            // Show review modal
+            showReviewModal();
+        }
+        
+        // Show review modal
+        function showReviewModal() {
+            const project = gameState.completedProjects[gameState.completedProjects.length - 1];
+            const artistFeedback = document.getElementById('artist-feedback');
+            
+            // Reset stars
+            const stars = document.querySelectorAll('#artist-review-stars .star');
+            stars.forEach(star => star.classList.remove('filled'));
+            
+            // Generate artist feedback
+            let feedbackText, feedbackRating;
+            if (project.quality === 'good') {
+                feedbackRating = 4 + Math.floor(Math.random() * 2); // 4-5
+                feedbackText = `${project.artist.name}说："和袅袅合作很愉快，期待下次合作！"`;
+            } else if (project.quality === 'normal') {
+                feedbackRating = 3 + Math.floor(Math.random() * 2); // 3-4
+                feedbackText = `${project.artist.name}说："合作还算顺利，就是沟通有点小问题。"`;
+            } else {
+                feedbackRating = 1 + Math.floor(Math.random() * 2); // 1-2
+                feedbackText = `${project.artist.name}说："沟通不太顺畅，希望下次能更好。"`;
+            }
+            
+            artistFeedback.innerHTML = `<p>${feedbackText} 评价: ${'★'.repeat(feedbackRating)}${'☆'.repeat(5 - feedbackRating)}</p>`;
+            
+            reviewModal.style.display = 'flex';
+        }
+        
+        // Submit review
+        function submitReview() {
+            const stars = document.querySelectorAll('#artist-review-stars .star');
+            const selectedStars = [...stars].filter(star => star.classList.contains('filled')).length;
+            const reviewText = document.getElementById('artist-review-text').value;
+            
+            if (selectedStars === 0) {
+                showNotification("请给画师评分");
+                return;
+            }
+            
+            // Reputation effect based on review fairness
+            const project = gameState.completedProjects[gameState.completedProjects.length - 1];
+            let fairnessBonus = 0;
+            
+            if (project.quality === 'good' && selectedStars >= 4) {
+                fairnessBonus = 5;
+            } else if (project.quality === 'bad' && selectedStars <= 2) {
+                fairnessBonus = 5;
+            } else if ((project.quality === 'good' && selectedStars <= 2) || 
+                      (project.quality === 'bad' && selectedStars >= 4)) {
+                fairnessBonus = -5;
+            }
+            
+            gameState.reputation = Math.max(0, gameState.reputation + fairnessBonus);
+            updateStatus();
+            
+            if (fairnessBonus > 0) {
+                addMessage("你的评价很公正，声望提升了！(◕‿◕✿)");
+            } else if (fairnessBonus < 0) {
+                addMessage("你的评价不太公正，声望下降了... (´･_･`)");
+            }
+            
+            reviewModal.style.display = 'none';
+            document.getElementById('artist-review-text').value = '';
+        }
+        
+        // Show social modal
+        function showSocialModal() {
+            const socialFeed = document.getElementById('social-feed');
+            socialFeed.innerHTML = '';
+            
+            if (gameState.completedProjects.length === 0 && gameState.socialPosts.length === 0) {
+                socialFeed.innerHTML = '<p>还没有任何动态，快去完成企划吧！</p>';
+            } else {
+                // Show completed projects
+                gameState.completedProjects.forEach(project => {
+                    const post = document.createElement('div');
+                    post.className = 'social-post';
+                    post.innerHTML = `
+                        <div class="post-header">
+                            <div class="post-avatar"></div>
+                            <div class="post-user">袅袅</div>
+                            <div class="post-time">${gameState.day - Math.floor(Math.random() * 3)}天前</div>
+                        </div>
+                        <div class="post-content">和 ${project.artist.name} 合作的企划完成啦！</div>
+                        <div class="post-image">${project.quality === 'good' ? '超棒的作品！' : project.quality === 'normal' ? '完成的作品' : '翻车的作品'}</div>
+                        <div class="post-stats">
+                            <div class="post-stat">❤️ ${Math.floor(Math.random() * 50) + (project.quality === 'good' ? 50 : 0)}</div>
+                            <div class="post-stat">💬 ${Math.floor(Math.random() * 20)}</div>
+                            <div class="post-stat">🔁 ${Math.floor(Math.random() * 10)}</div>
+                        </div>
+                    `;
+                    socialFeed.appendChild(post);
+                });
+                
+                // Show social events
+                gameState.socialPosts.forEach(post => {
+                    const postDiv = document.createElement('div');
+                    postDiv.className = 'social-post';
+                    postDiv.innerHTML = `
+                        <div class="post-header">
+                            <div class="post-avatar"></div>
+                            <div class="post-user">${post.type === 'exposed' ? '匿名用户' : '粉丝'}</div>
+                            <div class="post-time">刚刚</div>
+                        </div>
+                        <div class="post-content">${post.message}</div>
+                        <div class="post-stats">
+                            <div class="post-stat">❤️ ${Math.floor(Math.random() * 20)}</div>
+                            <div class="post-stat">💬 ${Math.floor(Math.random() * 10)}</div>
+                        </div>
+                    `;
+                    socialFeed.appendChild(postDiv);
+                });
+            }
+            
+            socialModal.style.display = 'flex';
+        }
+        
+        // Post art
+        function postArt() {
+            if (gameState.completedProjects.length === 0) {
+                showNotification("还没有完成的作品可以发布");
+                return;
+            }
+            
+            // Use last completed project
+            const project = gameState.completedProjects[gameState.completedProjects.length - 1];
+            
+            // Mood and reputation boost
+            let moodBoost = 0;
+            let repBoost = 0;
+            
+            if (project.quality === 'good') {
+                moodBoost = 15;
+                repBoost = 10;
+                addMessage("作品发布后获得了好多点赞！袅袅超开心！(≧▽≦) 心情+15，声望+10");
+            } else if (project.quality === 'normal') {
+                moodBoost = 5;
+                repBoost = 5;
+                addMessage("作品发布后反响还不错~ (◕‿◕) 心情+5，声望+5");
+            } else {
+                moodBoost = -5;
+                repBoost = -5;
+                addMessage("作品发布后反响不太好... (´･_･`) 心情-5，声望-5");
+            }
+            
+            gameState.mood = Math.min(100, gameState.mood + moodBoost);
+            gameState.reputation = Math.max(0, gameState.reputation + repBoost);
+            updateStatus();
+            
+            socialModal.style.display = 'none';
+        }
+        
+        // Random social event
+        function randomSocialEvent() {
+            const event = socialEvents[Math.floor(Math.random() * socialEvents.length)];
+            
+            gameState.socialPosts.unshift(event);
+            gameState.mood = Math.min(100, Math.max(0, gameState.mood + event.moodChange));
+            gameState.reputation = Math.max(0, gameState.reputation + event.reputationChange));
+            updateStatus();
+            
+            addMessage(event.message);
+            
+            if (event.moodChange > 0) {
+                addMessage("心情变好了！(◕‿◕✿)");
+            } else if (event.moodChange < 0) {
+                addMessage("心情变差了... (｡•́︿•̀｡)");
+            }
+            
+            showSocialModal();
+        }
+        
+        // Talk to friend
+        function talkToFriend() {
+            if (gameState.currentFriend) {
+                // Already talking to a friend
+                return;
+            }
+            
+            if (gameState.energy < 10) {
+                addMessage("袅袅太累了，没力气互骂... (｡•́︿•̀｡)");
+                return;
+            }
+            
+            gameState.energy -= 10;
+            updateStatus();
+            
+            // Set current friend (only advantage for now)
+            gameState.currentFriend = gameState.friends[0];
+            gameState.currentFriend.lastTalkDay = gameState.day;
+            
+            // Enable friend chat
+            friendInput.disabled = false;
+            friendSendBtn.disabled = false;
+            
+            // Switch to friend chat tab
+            document.querySelector('[data-tab="friends"]').click();
+            
+            // Clear and add initial message
+            friendChatMessages.innerHTML = '';
+            addMessage("优势上线了！(╬ Ò﹏Ó)", false, 'friend');
+            
+            // Friend's first message
+            setTimeout(() => {
+                const response = friendResponses.advantage[Math.floor(Math.random() * friendResponses.advantage.length)];
+                addMessage(response, false, 'friend');
+                
+                // 10% chance friend sends a gift
+                if (response.includes("礼物") || Math.random() < 0.1) {
+                    const gift = gifts.friend[Math.floor(Math.random() * gifts.friend.length)];
+                    gameState.inventory.gift1++;
+                    updateStatus();
+                    addMessage(`优势送给你一个${gift.name}！(◕‿◕✿)`, false, 'friend', gift.name);
+                }
+            }, 1000);
+        }
+        
+        // Ask artist for advice
+        function askArtist() {
+            if (gameState.knownArtists.length === 0) {
+                addMessage("袅袅还没有认识的画师呢... (´；ω；`)");
+                return;
+            }
+            
+            if (gameState.energy < 15) {
+                addMessage("袅袅太累了，没精力请教... (｡•́︿•̀｡)");
+                return;
+            }
+            
+            gameState.energy -= 15;
+            updateStatus();
+            
+            // Switch to artist chat tab
+            document.querySelector('[data-tab="artists"]').click();
+            
+            // Show artist list
+            artistChatMessages.innerHTML = '<div class="message bot-message"><div>选择一位画师请教吧~ (◕‿◕✿)</div></div>';
+        }
+        
+        // Start chatting with artist
+        function startArtistChat(artistName) {
+            const artist = gameState.knownArtists.find(a => a.name === artistName);
+            if (!artist) return;
+            
+            gameState.currentArtist = artist;
+            artist.lastTalkDay = gameState.day;
+            
+            // Enable artist chat
+            artistInput.disabled = false;
+            artistSendBtn.disabled = false;
+            
+            // Clear and add initial message
+            artistChatMessages.innerHTML = '';
+            addMessage(`${artistName}上线了！(◕‿◕✿)`, false, 'artist');
+            
+            // Artist's first message
+            setTimeout(() => {
+                const response = friendResponses.artist[Math.floor(Math.random() * friendResponses.artist.length)];
+                addMessage(response, false, 'artist');
+                
+                // 15% chance artist sends a gift
+                if (response.includes("礼物") || Math.random() < 0.15) {
+                    const gift = gifts.artist[Math.floor(Math.random() * gifts.artist.length)];
+                    gameState.inventory.gift2++;
+                    updateStatus();
+                    addMessage(`${artistName}送给你一个${gift.name}！(◕‿◕✿)`, false, 'artist', gift.name);
+                }
+            }, 1000);
+        }
+        
+        // Send message to friend
+        function sendFriendMessage() {
+            const message = friendInput.value.trim();
+            if (message) {
+                addMessage(message, true, 'friend');
+                friendInput.value = '';
+                
+                // Friend's response
+                setTimeout(() => {
+                    const response = friendResponses.advantage[Math.floor(Math.random() * friendResponses.advantage.length)];
+                    addMessage(response, false, 'friend');
+                    
+                    // Small chance to increase relationship
+                    if (Math.random() < 0.3) {
+                        gameState.currentFriend.relationship = Math.min(100, gameState.currentFriend.relationship + 2);
+                    }
+                    
+                    // 10% chance friend sends a gift
+                    if (response.includes("礼物") || Math.random() < 0.1) {
+                        const gift = gifts.friend[Math.floor(Math.random() * gifts.friend.length)];
+                        gameState.inventory.gift1++;
+                        updateStatus();
+                        addMessage(`优势送给你一个${gift.name}！(◕‿◕✿)`, false, 'friend', gift.name);
+                    }
+                }, 800);
+            }
+        }
+        
+        // Send message to artist
+        function sendArtistMessage() {
+            const message = artistInput.value.trim();
+            if (message) {
+                addMessage(message, true, 'artist');
+                artistInput.value = '';
+                
+                // Artist's response
+                setTimeout(() => {
+                    const response = friendResponses.artist[Math.floor(Math.random() * friendResponses.artist.length)];
+                    addMessage(response, false, 'artist');
+                    
+                    // Small chance to increase relationship
+                    if (Math.random() < 0.3) {
+                        gameState.currentArtist.relationship = Math.min(100, gameState.currentArtist.relationship + 2);
+                    }
+                    
+                    // 15% chance artist sends a gift
+                    if (response.includes("礼物") || Math.random() < 0.15) {
+                        const gift = gifts.artist[Math.floor(Math.random() * gifts.artist.length)];
+                        gameState.inventory.gift2++;
+                        updateStatus();
+                        addMessage(`${gameState.currentArtist.name}送给你一个${gift.name}！(◕‿◕✿)`, false, 'artist', gift.name);
+                    }
+                }, 800);
+            }
+        }
+        
+        // Update friend list
+        function updateFriendList() {
+            friendList.innerHTML = '';
+            
+            gameState.friends.forEach(friend => {
+                const item = document.createElement('div');
+                item.className = 'friend-item';
+                item.textContent = `${friend.name} (亲密度: ${friend.relationship})`;
+                item.addEventListener('click', () => {
+                    // For now, only advantage is available
+                    if (friend.name === "优势") {
+                        talkToFriend();
+                    }
+                });
+                friendList.appendChild(item);
+            });
+        }
+        
+        // Update artist list
+        function updateArtistList() {
+            artistListChat.innerHTML = '';
+            
+            if (gameState.knownArtists.length === 0) {
+                artistListChat.innerHTML = '<div class="message bot-message"><div>还没有认识的画师，快去邀请吧~ (◕‿◕✿)</div></div>';
+                return;
+            }
+            
+            gameState.knownArtists.forEach(artist => {
+                const item = document.createElement('div');
+                item.className = 'artist-item';
+                item.textContent = `${artist.name} (关系: ${artist.relationship})`;
+                item.addEventListener('click', () => {
+                    startArtistChat(artist.name);
+                });
+                artistListChat.appendChild(item);
+            });
+        }
+        
+        // Use item
+        function useItem(item) {
+            if (gameState.inventory[item] <= 0) return;
+            
+            gameState.inventory[item]--;
+            
+            if (item === 'fish') {
+                const moodBoost = 10;
+                gameState.mood = Math.min(100, gameState.mood + moodBoost);
+                addMessage("袅袅吃了小鱼干，心情变好了！(ฅ>ω<*ฅ) 心情+10");
+            } else if (item === 'peach') {
+                const moodBoost = 15;
+                gameState.mood = Math.min(100, gameState.mood + moodBoost);
+                addMessage("袅袅吃了奶龙石块，超开心！(ﾉ>ω<)ﾉ 心情+15");
+            } else if (item === 'gift1') {
+                const gift = gifts.friend[Math.floor(Math.random() * gifts.friend.length)];
+                gameState.mood = Math.min(100, gameState.mood + gift.effect.mood);
+                if (gameState.currentFriend) {
+                    gameState.currentFriend.relationship = Math.min(100, gameState.currentFriend.relationship + gift.effect.affection);
+                }
+                addMessage(`使用了${gift.name}，心情变好了！(◕‿◕✿) 心情+${gift.effect.mood}`);
+            } else if (item === 'gift2') {
+                const gift = gifts.artist[Math.floor(Math.random() * gifts.artist.length)];
+                gameState.mood = Math.min(100, gameState.mood + gift.effect.mood);
+                gameState.reputation = Math.max(0, gameState.reputation + gift.effect.reputation);
+                addMessage(`使用了${gift.name}，感觉学到了很多！(•̀ᴗ•́)و 心情+${gift.effect.mood}，声望+${gift.effect.reputation}`);
+            }
+            
+            updateStatus();
+        }
+        
+        // Save game
+        function saveGame() {
+            localStorage.setItem('niaoniaoGame', JSON.stringify(gameState));
+            showNotification("游戏已保存！");
+            addMessage("袅袅记住现在的进度啦~ (◕‿◕✿)");
+        }
+        
+        // Load game
+        function loadGame() {
+            const savedGame = localStorage.getItem('niaoniaoGame');
+            if (savedGame) {
+                Object.assign(gameState, JSON.parse(savedGame));
+                updateStatus();
+                showNotification("游戏已读取！");
+                addMessage("袅袅回来啦！继续冒险吧~ (ฅ^•ﻌ•^ฅ)");
+                
+                // Update friend and artist lists
+                updateFriendList();
+                updateArtistList();
+            } else {
+                showNotification("没有找到保存的游戏");
+                addMessage("袅袅没有找到保存的进度... (´･ω･`)?");
+            }
+        }
+        
+        // Initialize stars rating
+        function initStarsRating() {
+            const stars = document.querySelectorAll('#artist-review-stars .star');
+            stars.forEach(star => {
+                star.addEventListener('click', () => {
+                    const rating = parseInt(star.dataset.rating);
+                    
+                    // Fill stars up to clicked one
+                    stars.forEach((s, index) => {
+                        if (index < rating) {
+                            s.classList.add('filled');
+                        } else {
+                            s.classList.remove('filled');
+                        }
+                    });
+                });
+            });
+        }
+        
+        // Initialize tabs
+        function initTabs() {
+            chatTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Set active tab
+                    chatTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show corresponding chat
+                    niaoniaoChat.style.display = 'none';
+                    friendsChat.style.display = 'none';
+                    artistsChat.style.display = 'none';
+                    
+                    if (tab.dataset.tab === 'niaoniao') {
+                        niaoniaoChat.style.display = 'flex';
+                    } else if (tab.dataset.tab === 'friends') {
+                        friendsChat.style.display = 'flex';
+                    } else if (tab.dataset.tab === 'artists') {
+                        artistsChat.style.display = 'flex';
+                    }
+                    
+                    // Disable input if no friend/artist selected
+                    if (tab.dataset.tab === 'friends' && !gameState.currentFriend) {
+                        friendInput.disabled = true;
+                        friendSendBtn.disabled = true;
+                    }
+                    
+                    if (tab.dataset.tab === 'artists' && !gameState.currentArtist) {
+                        artistInput.disabled = true;
+                        artistSendBtn.disabled = true;
+                    }
+                });
+            });
+        }
+        
+        // Event listeners
+        sendBtn.addEventListener('click', () => {
+            const message = userInput.value.trim();
+            if (message) {
+                addMessage(message, true);
+                userInput.value = '';
+                niaoniaoRespond(message);
+            }
+        });
+        
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendBtn.click();
+            }
+        });
+        
+        friendSendBtn.addEventListener('click', sendFriendMessage);
+        
+        friendInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendFriendMessage();
+            }
+        });
+        
+        artistSendBtn.addEventListener('click', sendArtistMessage);
+        
+        artistInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendArtistMessage();
+            }
+        });
+        
+        emojiTrigger.addEventListener('click', () => {
+            emojiPicker.style.display = emojiPicker.style.display === 'block' ? 'none' : 'block';
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!emojiPicker.contains(e.target) && e.target !== emojiTrigger) {
+                emojiPicker.style.display = 'none';
+            }
+        });
+        
+        newDayBtn.addEventListener('click', newDay);
+        inviteArtistBtn.addEventListener('click', showArtistModal);
+        checkSocialBtn.addEventListener('click', showSocialModal);
+        talkFriendBtn.addEventListener('click', talkToFriend);
+        askArtistBtn.addEventListener('click', askArtist);
+        saveBtn.addEventListener('click', saveGame);
+        loadBtn.addEventListener('click', loadGame);
+        
+        nextStageBtn.addEventListener('click', nextProjectStage);
+        approveBtn.addEventListener('click', approveStage);
+        rejectBtn.addEventListener('click', rejectStage);
+        postArtBtn.addEventListener('click', postArt);
+        randomEventBtn.addEventListener('click', randomSocialEvent);
+        submitReviewBtn.addEventListener('click', submitReview);
+        
+        inventoryItems.forEach(item => {
+            item.addEventListener('click', () => {
+                useItem(item.dataset.item);
+            });
+        });
+        
+        closeModalBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
+            });
+        });
+        
+        // Initialize
+        initEmojiPicker();
+        initStarsRating();
+        initTabs();
+        updateStatus();
+        updateFriendList();
+        updateArtistList();
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
